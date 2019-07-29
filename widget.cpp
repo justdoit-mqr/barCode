@@ -5,7 +5,6 @@
  *@brief:  构造条形码生成主界面
  */
 #include "widget.h"
-#include "ui_widget.h"
 #include "barcode.h"
 #include <QBoxLayout>
 #include <QDebug>
