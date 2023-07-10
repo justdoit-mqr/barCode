@@ -2,6 +2,7 @@
  *@file:   barcode.h
  *@author: 缪庆瑞
  *@date:   2016.9.28
+ *@update: 2023.7.10
  *@brief:  处理各类条形码编号，返回编码串
  */
 #ifndef BARCODE_H
@@ -12,9 +13,16 @@
 class BarCode
 {
 public:
+    //条码类型
+    enum BarCodeType{
+        CODE_128B_TYPE=0,
+        EAN13_TYPE,
+        UNKNOWN_TYPE
+    };
+
     BarCode();
     QString process128BCode(QString code);//处理128 B类型条码码的编号，返回bs字符串
-    QString processEAN13Code(QString code);//处理EAN13码的编号，返回01字符串
+    QString processEAN13Code(QString &code);//处理EAN13码的编号，返回01字符串
 
 private:
     void initCode128B();//初始化128 B型码相关数据

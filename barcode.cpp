@@ -57,22 +57,17 @@ QString BarCode::process128BCode(QString code)
     checkId %=103;
     barCodes.append(code128BValue.at(checkId));//追加校验位的bs编码
     barCodes.append("bbsssbbbsbsbb");//停止位 StopB
-    /*为开头和结尾多留11个长度的空白，它实际上是不属于128B的编码的，这里是模仿EAN13的空白区,
-     *使生成的条形码看起来更顺眼些，但从接口功能上讲，不该放在这里。不过为了方便处理，先这样，
-     *以后有时间再改。
-     */
-    barCodes.prepend("sssssssssss");
-    barCodes.append("sssssssssss");
     return barCodes;//返回编码好的bs串
 }
 /*
  *@author:  缪庆瑞
  *@date:    2016.9.29
+ *@update:  2023.7.10
  *@brief:   处理EAN13码的原始编号，返回01串
- *@param:   code:用户输入的编号
+ *@param:   code:用户输入的编号,引用形式，内部会追加校验位
  *@return:  QString:NULL表示编码失败
  */
-QString BarCode::processEAN13Code(QString code)
+QString BarCode::processEAN13Code(QString &code)
 {
     if(code.size() != 12)
     {
@@ -96,16 +91,10 @@ QString BarCode::processEAN13Code(QString code)
         QMessageBox::information(0,"barcode","输入的字符不应含有\n非数字符号。。。");
         return NULL;
     }
-    if(!preNo)
-    {
-        //qDebug()<<"前置码不能为0。。。";
-        QMessageBox::information(0,"barcode","前置码不能为0。");
-        return NULL;
-    }
     //qDebug()<<"preNo:"<<preNo;
     C1+=preNo;
-    //通过前置码得到左侧数据符的编码方式A或B，preCodeWayList对应1-9
-    QString preCodeWay = preCodeWayList.at(preNo-1);
+    //通过前置码得到左侧数据符的编码方式A或B，preCodeWayList对应0-9
+    QString preCodeWay = preCodeWayList.at(preNo);
     //左侧数据符 6位
     for(int i=1;i<7;i++)
     {
@@ -158,7 +147,8 @@ QString BarCode::processEAN13Code(QString code)
     //qDebug()<<"C2:"<<C2<<"C1:"<<C1;
     CC=(C1+C2*3)%10;
     checkId=(10-CC)%10;
-    qDebug()<<"checkId:"<<checkId;
+    //qDebug()<<"checkId:"<<checkId;
+    code.append(QString::number(checkId));
     barCodes.append(codeCEAN13Value.at(checkId));//校验码编码
     barCodes.append("101");//终止符
     barCodes.append("0000000");//7个模块的右侧空白区
@@ -184,7 +174,7 @@ void BarCode::initCode128B()
             <<"p"<<"q"<<"r"<<"s"<<"t"<<"u"<<"v"<<"w"<<"x"<<"y"
             <<"z"<<"{"<<"|"<<"}"<<"~"<<"DEL"<<"FNC3"<<"FNC2"<<"SHIFT"<<"CODEC"
             <<"FNC4"<<"CODEA"<<"FNC1"<<"StartA"<<"StartB"<<"StartC"<<"Stop";
-    //与字符一一对应的bs编码
+    //与字符一一对应的bs编码  b：单位黑线  s:单位空白
     code128BValue<<"bbsbbssbbss"<<"bbssbbsbbss"<<"bbssbbssbbs"<<"bssbssbbsss"<<"bssbsssbbss"<<"bsssbssbbss"<<"bssbbssbsss"<<"bssbbsssbss"<<"bsssbbssbss"<<"bbssbssbsss"
             <<"bbssbsssbss"<<"bbsssbssbss"<<"bsbbssbbbss"<<"bssbbsbbbss"<<"bssbbssbbbs"<<"bsbbbssbbss"<<"bssbbbsbbss"<<"bssbbbssbbs"<<"bbssbbbssbs"<<"bbssbsbbbss"
             <<"bbssbssbbbs"<<"bbsbbbssbss"<<"bbssbbbsbss"<<"bbbsbbsbbbs"<<"bbbsbssbbss"<<"bbbssbsbbss"<<"bbbssbssbbs"<<"bbbsbbssbss"<<"bbbssbbsbss"<<"bbbssbbssbs"
@@ -201,13 +191,15 @@ void BarCode::initCode128B()
 /*
  *@author:  缪庆瑞
  *@date:    2016.9.28
+ *@update:  2023.7.10
  *@brief:   初始化EAN13码相关数据
  */
 void BarCode::initEAN13()
 {
     /***********************************EAN13码******************************/
-    //EAN13条码 前置码对应左侧数据符的编码方式AB 前置码为国家代码（1-9，最前面的数字）
-    preCodeWayList<<"AAAAAA"<<"AABABB"<<"AABBAB"<<"ABAABB"<<"ABBAAB"<<"ABBBAA"<<"ABABAB"<<"ABABBA"<<"ABBABA";
+    //EAN13条码 前置码对应左侧数据符的编码方式AB 前置码为国家代码（0-9，最前面的数字）
+    preCodeWayList<<"AAAAAA"<<"AABABB"<<"AABBAB"<<"AABBBA"<<"ABAABB"
+                 <<"ABBAAB"<<"ABBBAA"<<"ABABAB"<<"ABABBA"<<"ABBABA";
     //左侧数据符(6个) A编码方式下0-9对应编码值 1：单位黑线  0:单位空白
     codeAEAN13Value<<"0001101"<<"0011001"<<"0010011"<<"0111101"<<"0100011"
                    <<"0110001"<<"0101111"<<"0111011"<<"0110111"<<"0001011";

@@ -35,7 +35,7 @@ Widget::Widget(QWidget *parent) :
     connect(produceEAN13Button,SIGNAL(clicked()),this,SLOT(produceBarCodeEAN13Slot()));
     connect(savePictureButton,SIGNAL(clicked()),this,SLOT(savePictureSlot()));
 
-    this->resize(400,300);
+    this->resize(600,400);
 }
 
 Widget::~Widget()
@@ -49,13 +49,8 @@ Widget::~Widget()
 void Widget::produceBarCode128Slot()
 {
     QString code=lineEdit->text();//获取输入的编号
-    BarCode code128;//定义对条形码编号编码的对象
-    QString barCodes;//存放bs串，表示b：黑色线  s：白色线
-    if((barCodes=code128.process128BCode(code))!=NULL)
-    {
-        barCodeBox->setBarCodes(barCodes);//给绘制函数中的用到的变量设置值
-        barCodeBox->update();//重新绘制
-    }
+    barCodeBox->setBarCode(code,BarCode::CODE_128B_TYPE);//设置条码
+    barCodeBox->update();//重新绘制
 }
 /*
  *@author: 缪庆瑞
@@ -65,14 +60,8 @@ void Widget::produceBarCode128Slot()
 void Widget::produceBarCodeEAN13Slot()
 {
     QString code=lineEdit->text();//获取输入的编号
-
-    BarCode codeEAN13;//定义对条形码编号编码的对象
-    QString barCodes;//存放01串,表示1：黑色线  0：白色线
-    if((barCodes=codeEAN13.processEAN13Code(code))!=NULL)
-    {
-        barCodeBox->setBarCodes(barCodes);//给绘制函数中的用到的变量设置值
-        barCodeBox->update();//重新绘制
-    }
+    barCodeBox->setBarCode(code,BarCode::EAN13_TYPE);//设置条码
+    barCodeBox->update();//重新绘制
 }
 /*
  *@author: 缪庆瑞
